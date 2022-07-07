@@ -34,6 +34,7 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 * Update/Delete endpoints
 * Search endpoint
 * How to get the table name? (to remove the hardcoded stuff)
+* Merge `read` and `read_all` in a unique method
   
 ## Test
 

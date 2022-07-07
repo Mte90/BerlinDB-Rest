@@ -63,22 +63,25 @@ class Rest extends Base {
 			if ( $global_action === 'shows_all' ) {
 				$this->rest_options[ 'shows_all' ] = true;
 			}
-		} else {
-			if ( !isset( $this->args[ 'rest' ] ) ) {
-				return;
-			}
 
-			$this->rest_options = $this->args[ 'rest' ];
-
-			if ( isset( $args[ 'crud' ] ) && $args[ 'crud' ] ) {
-				$this->rest_options[ 'create' ] = true;
-				$this->rest_options[ 'read' ] = true;
-				$this->rest_options[ 'update' ] = true;
-				$this->rest_options[ 'delete' ] = true;
-			}
+			\add_action( 'rest_api_init', array( $this, 'initialize_global' ) );
+			return;
 		}
 
-		\add_action( 'rest_api_init', array( $this, 'initialize' ) );
+		if ( !isset( $this->args[ 'rest' ] ) ) {
+			return;
+		}
+
+		$this->rest_options = $this->args[ 'rest' ];
+
+		if ( isset( $args[ 'crud' ] ) && $args[ 'crud' ] ) {
+			$this->rest_options[ 'create' ] = true;
+			$this->rest_options[ 'read' ] = true;
+			$this->rest_options[ 'update' ] = true;
+			$this->rest_options[ 'delete' ] = true;
+		}
+
+		\add_action( 'rest_api_init', array( $this, 'initialize_column_value' ) );
 	}
 
 	/**
@@ -87,7 +90,7 @@ class Rest extends Base {
 	 * @since 3.0.0
 	 *
 	 */
-	public function initialize() {
+	public function initialize_global() {
 		if ( isset( $this->rest_options[ 'create' ] ) && $this->rest_options[ 'create' ] ) {
 			\register_rest_route(
 				'books', // TODO change with the table name
@@ -124,6 +127,9 @@ class Rest extends Base {
 				)
 			);
 		}
+	}
+
+	public function initialize_column_value() {
 		if ( isset( $this->rest_options[ 'read' ] ) && $this->rest_options[ 'read' ] ) {
 			\register_rest_route(
 				'books', // TODO change with the table name
