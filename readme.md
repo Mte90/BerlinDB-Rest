@@ -37,19 +37,19 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 * `wp-json/books/<id>`|PUT: Update item by column/key name
 * `wp-json/books/create`|POST: Create endpoint
 * `wp-json/books/all`|GET: List endpoint with pagination and offset
-* `wp-json/books/search/<title>`: Will search inside the `title` that has that content
+* `wp-json/books/search/?s=word&columns[]=<title>`: Will search inside the `title` column that has that content
 
 ### Todo
 
 **Specific changes are comment with TODO to discuss later**
 
-* Search endpoint is implemented but there isn't a method to search by a column and a value
+* Search support for multiple column
 * How to get the table name? (to remove the hardcoded stuff)
-* Merge `read` and `read_all` in a unique method
+* Merge `read`, `read_all`, `search` in a unique method
   
 ## Test
 
-To view in the browser `http://domain.test/wp-json/books/1`.
+To view in the browser `http://domain.test/wp-json/books/1` or to search `http://domain.test/wp-json/books/?s=Moc&columns[]=title`.
 
 ```
 # Create
