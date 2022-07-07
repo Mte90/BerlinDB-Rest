@@ -47,6 +47,22 @@ class Schema extends Base {
 	 * @var   array
 	 */
 	protected $columns_array = array();
+
+	/**
+	 * Table name, without the global table prefix.
+	 *
+	 * @since 3.0.0
+	 * @var   string
+	 */
+	public $table_name = '';
+
+	/**
+	 * Query class used for REST integration.
+	 *
+	 * @since 3.0.0
+	 * @var   string
+	 */
+	public $query_class = '';
 	// EDIT New lines
 
 	/**
@@ -65,13 +81,6 @@ class Schema extends Base {
 		$columns = $this->columns;
 		$this->columns = array();
 
-		if ( isset( $this->rest[ 'crud' ] ) && $this->rest[ 'crud' ] ) {
-			$this->rest[ 'create' ] = true;
-			$this->rest[ 'read' ] = true;
-			$this->rest[ 'update' ] = true;
-			$this->rest[ 'delete' ] = true;
-		}
-
 		// Loop through columns and create objects from them
 		foreach ( $columns as $column ) {
 			if ( is_array( $column ) ) {
@@ -86,20 +95,19 @@ class Schema extends Base {
 
 		// EDIT New lines
 		$global_rest_methods = array();
-		// TODO improve those lines...
-		if ( isset( $this->rest[ 'create' ] ) ) {
-			$global_rest_methods[ 'create' ] = true;
+
+		if ( isset( $this->rest[ 'crud' ] ) && $this->rest[ 'crud' ] ) {
+			$this->rest[ 'create' ] = true;
+			$this->rest[ 'read' ] = true;
+			$this->rest[ 'update' ] = true;
+			$this->rest[ 'delete' ] = true;
 		}
 
-		if ( isset( $this->rest[ 'shows_all' ] ) ) {
-			$global_rest_methods[ 'shows_all' ] = true;
-		}
+		$global_rest_methods[ 'create' ] = isset( $this->rest[ 'create' ] );
+		$global_rest_methods[ 'shows_all' ] = isset( $this->rest[ 'shows_all' ] );
+		$global_rest_methods[ 'enable_search' ] = isset( $this->rest[ 'enable_search' ] );
 
-		if ( isset( $this->rest[ 'enable_search' ] ) ) {
-			$global_rest_methods[ 'enable_search' ] = true;
-		}
-
-		new Rest( $this->columns_array, $global_rest_methods );
+		new Rest( $this->columns_array, $global_rest_methods, $this->table_name, $this->query_class );
 		// EDIT New lines
 	}
 

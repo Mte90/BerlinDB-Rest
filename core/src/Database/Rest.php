@@ -80,6 +80,22 @@ class Rest extends Base {
 	protected $args = '';
 
 	/**
+	 * Table name, without the global table prefix.
+	 *
+	 * @since 3.0.0
+	 * @var   string
+	 */
+	protected $table_name = '';
+
+	/**
+	 * Query class used for REST integration.
+	 *
+	 * @since 3.0.0
+	 * @var   string
+	 */
+	public $query_class = '';
+
+	/**
 	 * Array with all the columns (used by some specific feature).
 	 *
 	 * @since 3.0.0
@@ -92,10 +108,13 @@ class Rest extends Base {
 	 *
 	 * @since 3.0.0
 	 */
-	public function __construct( $all_columns = array(), $global_action = array() ) {
+	public function __construct( $all_columns = array(), $global_action = array(), $table_name = '', $query_class = '' ) {
 		if ( !empty( $all_columns ) ) {
 			$this->all_columns = $all_columns;
 		}
+
+		$this->table_name = $table_name;
+		$this->query_class = $query_class;
 
 		if ( empty( $this->args ) ) {
 			$this->rest_options = $global_action;
@@ -130,13 +149,13 @@ class Rest extends Base {
 	public function initialize_global() {
 		if ( isset( $this->rest_options[ 'create' ] ) && $this->rest_options[ 'create' ] ) {
 			\register_rest_route(
-				'books', // TODO change with the table name
+				$this->table_name,
 				'create',
 				array(
 					'methods' => \WP_REST_Server::CREATABLE,
 					'callback' => array( $this, 'create' ),
 					'args' => array(
-						'books' => array( // TODO change with the table name
+						$this->table_name => array(
 							'description' => 'Object',
 							'type' => 'array' // TODO it is a valid type?
 						)
@@ -146,7 +165,7 @@ class Rest extends Base {
 		}
 		if ( isset( $this->rest_options[ 'shows_all' ] ) && $this->rest_options[ 'shows_all' ] ) {
 			\register_rest_route(
-				'books', // TODO change with the table name
+				$this->table_name,
 				'all',
 				array(
 					'methods' => \WP_REST_Server::READABLE,
@@ -156,9 +175,8 @@ class Rest extends Base {
 			);
 		}
 		if ( isset( $this->rest_options[ 'enable_search' ] ) && $this->rest_options[ 'enable_search' ] ) {
-			// TODO don't add if already exists for this endpoint
 			\register_rest_route(
-				'books', // TODO change with the table name
+				$this->table_name,
 				'/search/',
 					array(
 					'methods' => \WP_REST_Server::READABLE,
@@ -166,11 +184,11 @@ class Rest extends Base {
 					'args' => \wp_parse_args( $this->generate_rest_args(), array(
 						's' => array(
 							'description' => 'Search that string in that key',
-							'type' => 'string' // TODO the types are the same for REST?
+							'type' => 'string'
 						),
 						'columns' => array(
 							'description' => 'Search on those columns',
-							'type' => 'array' // TODO the types are the same for REST?
+							'type' => 'array'
 						)
 					) )
 				)
@@ -181,7 +199,7 @@ class Rest extends Base {
 	public function initialize_column_value( $column ) {
 		if ( isset( $column[ 'rest' ][ 'read' ] ) && $column[ 'rest' ][ 'read' ] ) {
 			\register_rest_route(
-				'books', // TODO change with the table name
+				$this->table_name,
 				'/(?P<' . $column[ 'name' ] .'>\d+)',
 				array(
 					'methods' => \WP_REST_Server::READABLE,
@@ -198,7 +216,7 @@ class Rest extends Base {
 		}
 		if ( isset( $column[ 'rest' ][ 'update' ] ) && $column[ 'rest' ][ 'update' ] ) {
 			\register_rest_route(
-				'books', // TODO change with the table name
+				$this->table_name,
 				'/(?P<' . $column[ 'name' ] .'>\d+)',
 					array(
 					'methods' => \WP_REST_Server::EDITABLE,
@@ -216,7 +234,7 @@ class Rest extends Base {
 		}
 		if ( isset( $column[ 'rest' ][ 'delete' ] ) && $column[ 'rest' ][ 'delete' ] ) {
 			\register_rest_route(
-				'books', // TODO change with the table name
+				$this->table_name,
 				'/(?P<' . $column[ 'name' ] .'>\d+)',
 					array(
 					'methods' => 'DELETE',
@@ -285,7 +303,7 @@ class Rest extends Base {
 			$args[ $column[ 'name' ] ] = $request[ $column[ 'name' ] ];
 		}
 
-		$query = new \Book_Query( $args ); // TODO auto detect the query class
+		$query = new $this->query_class( $args );
 		// TODO Seems that otherwise doesn't work
 		if ( isset( $query->items[0] ) ) {
 			echo \wp_json_encode( $query->items[0] );
@@ -296,24 +314,24 @@ class Rest extends Base {
 	public function read_all( \WP_REST_Request $request ) {
 		$args = $this->parse_args( $request );
 
-		$query = new \Book_Query( $args ); // TODO auto detect the query class
+		$query = new $this->query_class( $args );
 		return \rest_ensure_response( $query->items );
 	}
 
 	public function create( \WP_REST_Request $request ) {
-		$value = \apply_filters( 'berlindb_rest_books_create', $request[ 'value' ] );
+		$value = \apply_filters( 'berlindb_rest_' . $this->table_name . '_create', $request[ 'value' ] );
 		if ( isset( $request[ 'value' ] ) && !\is_wp_error( $value ) ) {
-			$query = new \Book_Query(); // TODO auto detect the query class
-			$query->add_item( apply_filters( 'berlindb_rest_books_create', $value ) ); // TODO auto detect the query class
+			$query = new $this->query_class();
+			$query->add_item( apply_filters( 'berlindb_rest_' . $this->table_name . '_create', $value ) );
 			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
 		}
 		return \rest_ensure_response( array( 'fail' => true ) ); // TODO We want strings or a custom text?
 	}
 
 	public function delete( \WP_REST_Request $request, $column ) {
-		$delete = \apply_filters( 'berlindb_rest_books_delete', true, $request, $this );
+		$delete = \apply_filters( 'berlindb_rest_' . $this->table_name . '_delete', true, $request, $this );
 		if ( $delete ) {
-			$query = new \Book_Query(); // TODO auto detect the query class
+			$query = new $this->query_class();
 			$query->delete_item( $request[ $column[ 'name' ] ] );
 			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
 		}
@@ -321,10 +339,10 @@ class Rest extends Base {
 	}
 
 	public function update( \WP_REST_Request $request, $column ) {
-		$update = \apply_filters( 'berlindb_rest_books_update', true, $request, $this );
-		$item_meta = \apply_filters( 'berlindb_rest_books_update_value', $request[ 'value' ], $request, $this );
+		$update = \apply_filters( 'berlindb_rest_' . $this->table_name . '_update', true, $request, $this );
+		$item_meta = \apply_filters( 'berlindb_rest_' . $this->table_name . '_update_value', $request[ 'value' ], $request, $this );
 		if ( $update  && !\is_wp_error( $item_meta ) ) {
-			$query = new \Book_Query(); // TODO auto detect the query class
+			$query = new $this->query_class();
 			$query->update_item( $request[ $column[ 'name' ] ], $item_meta );
 			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
 		}
@@ -333,11 +351,11 @@ class Rest extends Base {
 
 	public function search( \WP_REST_Request $request ) {
 		// TODO support the search only for the column supported
-		$search = \apply_filters( 'berlindb_rest_books_search', true, $request, $this );
-		$value = \apply_filters( 'berlindb_rest_books_search_value', $request[ 's' ], $request, $this );
+		$search = \apply_filters( 'berlindb_rest_' . $this->table_name . '_search', true, $request, $this );
+		$value = \apply_filters( 'berlindb_rest_' . $this->table_name . '_search_value', $request[ 's' ], $request, $this );
 		if ( $search && !empty( $value ) && !\is_wp_error( $value ) ) {
 			$args = $this->parse_args( $request );
-			$query = new \Book_Query( $args ); // TODO auto detect the query class);
+			$query = new $this->query_class( $args ););
 			if ( !empty( $query->items ) ) {
 				return \rest_ensure_response( $query->items );
 			}

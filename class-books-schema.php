@@ -15,6 +15,9 @@ class Books_Schema extends \BerlinDB\Database\Schema {
 	);
 	// EDIT New lines
 
+	public $table_name = 'books';
+	public $query_class = '\Book_Query';
+
 	public $columns = [
 
 		//id
