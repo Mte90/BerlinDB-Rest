@@ -146,6 +146,22 @@ class Rest extends Base {
 				)
 			);
 		}
+		if ( isset( $this->rest_options[ 'delete' ] ) && $this->rest_options[ 'delete' ] ) {
+			\register_rest_route(
+				'books', // TODO change with the table name
+				'/(?P<' . $this->args[ 'name' ] .'>\d+)',
+					array(
+					'methods' => 'DELETE',
+					'callback' => array( $this, 'delete' ),
+					'args' => array(
+						$this->args[ 'name' ] => array(
+							'description' => $this->args[ 'name' ] . ' key',
+							'type' => $this->args[ 'name' ] // TODO the types are the same for REST?
+						)
+					)
+				)
+			);
+		}
 	}
 
 	public function read( \WP_REST_Request $request ) {
@@ -177,9 +193,21 @@ class Rest extends Base {
 	}
 
 	public function create( \WP_REST_Request $request ) {
-		if ( isset( $request[ 'value' ] ) ) {
+		$value = apply_filters( 'berlindb_rest_books_create', $request[ 'value' ] );
+		if ( isset( $request[ 'value' ] ) && !is_wp_error( $value ) ) {
 			$query = new \Book_Query(); // TODO auto detect the query class
-			$query->add_item( apply_filters( 'berlindb_rest_books_create', $request[ 'value' ] ) ); // TODO auto detect the query class
+			$query->add_item( apply_filters( 'berlindb_rest_books_create', $value ) ); // TODO auto detect the query class
+			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
+		}
+		return \rest_ensure_response( array( 'fail' => true ) ); // TODO We want strings or a custom text?
+	}
+
+	public function delete( \WP_REST_Request $request ) {
+		$delete = apply_filters( 'berlindb_rest_books_delete', true, $request, $this );
+		if ( $delete ) {
+			$query = new \Book_Query(); // TODO auto detect the query class
+			// TODO maybe a filter to shortcircuit this delete?
+			$query->delete_item( $request[ $this->args[ 'name' ] ] ); // TODO auto detect the query class
 			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
 		}
 		return \rest_ensure_response( array( 'fail' => true ) ); // TODO We want strings or a custom text?
