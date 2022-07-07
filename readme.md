@@ -19,6 +19,8 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 
 * `berlindb_rest_books_create`: executed on creation, the parameter shared is the items data in this way can be sanitized etc, if it is a WP_Error boject the creation is blocked
 * `berlindb_rest_books_delete`: return a boolean to execute the action, 2 variables shared, the whole request and the whole Rest object
+* `berlindb_rest_books_update`: like the filter above
+* `berlindb_rest_books_update_value`: executed on update, the parameter shared is the items data in this way can be sanitized etc, if it is a WP_Error object the creation is blocked
 
 ## Other information
 
@@ -32,6 +34,7 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 
 * `wp-json/books/<id>`|GET: Read endpoint by column/key name
 * `wp-json/books/<id>`|DELETE: Delete item by column/key name
+* `wp-json/books/<id>`|PUT: Update item by column/key name
 * `wp-json/books/create`|POST: Create endpoint
 * `wp-json/books/all`|GET: List endpoint with pagination and offset
 
@@ -39,7 +42,6 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 
 **Specific changes are comment with TODO to discuss later**
 
-* Update endpoints
 * Search endpoint
 * How to get the table name? (to remove the hardcoded stuff)
 * Merge `read` and `read_all` in a unique method
@@ -54,4 +56,7 @@ curl -X POST -d value['isbn']=val -d value['title']=val2 -d value['author']=val2
 
 # Delete
 curl -X DELETE  http://boilerplate.test/wp-json/books/1
+
+# Update
+curl -X PUT -d value['isbn']=value -d value['title']=val3  http://boilerplate.test/wp-json/books/11
 ```

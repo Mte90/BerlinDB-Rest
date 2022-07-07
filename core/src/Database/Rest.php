@@ -135,7 +135,7 @@ class Rest extends Base {
 				'books', // TODO change with the table name
 				'/(?P<' . $this->args[ 'name' ] .'>\d+)',
 				array(
-					'methods' => 'GET',
+					'methods' => \WP_REST_Server::READABLE,
 					'callback' => array( $this, 'read' ),
 					'args' => array(
 						$this->args[ 'name' ] => array(
@@ -146,12 +146,28 @@ class Rest extends Base {
 				)
 			);
 		}
+		if ( isset( $this->rest_options[ 'update' ] ) && $this->rest_options[ 'update' ] ) {
+			\register_rest_route(
+				'books', // TODO change with the table name
+				'/(?P<' . $this->args[ 'name' ] .'>\d+)',
+					array(
+					'methods' => \WP_REST_Server::EDITABLE,
+					'callback' => array( $this, 'update' ),
+					'args' => array(
+						'meta' => array(
+							'description' => 'Object',
+							'type' => 'array' // TODO the types are the same for REST?
+						)
+					)
+				)
+			);
+		}
 		if ( isset( $this->rest_options[ 'delete' ] ) && $this->rest_options[ 'delete' ] ) {
 			\register_rest_route(
 				'books', // TODO change with the table name
 				'/(?P<' . $this->args[ 'name' ] .'>\d+)',
 					array(
-					'methods' => 'DELETE',
+					'methods' => \WP_REST_Server::DELETABLE,
 					'callback' => array( $this, 'delete' ),
 					'args' => array(
 						$this->args[ 'name' ] => array(
@@ -193,8 +209,8 @@ class Rest extends Base {
 	}
 
 	public function create( \WP_REST_Request $request ) {
-		$value = apply_filters( 'berlindb_rest_books_create', $request[ 'value' ] );
-		if ( isset( $request[ 'value' ] ) && !is_wp_error( $value ) ) {
+		$value = \apply_filters( 'berlindb_rest_books_create', $request[ 'value' ] );
+		if ( isset( $request[ 'value' ] ) && !\is_wp_error( $value ) ) {
 			$query = new \Book_Query(); // TODO auto detect the query class
 			$query->add_item( apply_filters( 'berlindb_rest_books_create', $value ) ); // TODO auto detect the query class
 			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
@@ -203,11 +219,21 @@ class Rest extends Base {
 	}
 
 	public function delete( \WP_REST_Request $request ) {
-		$delete = apply_filters( 'berlindb_rest_books_delete', true, $request, $this );
+		$delete = \apply_filters( 'berlindb_rest_books_delete', true, $request, $this );
 		if ( $delete ) {
 			$query = new \Book_Query(); // TODO auto detect the query class
-			// TODO maybe a filter to shortcircuit this delete?
-			$query->delete_item( $request[ $this->args[ 'name' ] ] ); // TODO auto detect the query class
+			$query->delete_item( $request[ $this->args[ 'name' ] ] );
+			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
+		}
+		return \rest_ensure_response( array( 'fail' => true ) ); // TODO We want strings or a custom text?
+	}
+
+	public function update( \WP_REST_Request $request ) {
+		$update = \apply_filters( 'berlindb_rest_books_update', true, $request, $this );
+		$item_meta = \apply_filters( 'berlindb_rest_books_update_value', $request[ 'value' ], $request, $this );
+		if ( $update  && !\is_wp_error( $value )) {
+			$query = new \Book_Query(); // TODO auto detect the query class
+			$query->update_item( $request[ $this->args[ 'name' ] ], $item_meta );
 			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
 		}
 		return \rest_ensure_response( array( 'fail' => true ) ); // TODO We want strings or a custom text?

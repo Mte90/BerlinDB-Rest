@@ -28,7 +28,8 @@ class Books_Schema extends \BerlinDB\Database\Schema {
 			// EDIT New lines
 			'rest' => array(
 				'read' => true,
-				'delete' => true
+				'delete' => true,
+				'update' => true
 			)
 			// EDIT New lines
 		],
