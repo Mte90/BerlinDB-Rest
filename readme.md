@@ -27,7 +27,7 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 * It is used the CRUD acronym to enable all the 4 kind of actions supported create/read/update/delete
 * Supports all the parameters of the `Query` class
 * Include a pagination support with the `page` parameter
-* `shows_all/read_all_enable_search` are global parameters that requires a new variable, check the [example](https://github.com/Mte90/BerlinDB-Rest/blob/master/class-books-schema.php)
+* `shows_all/create/enable_search` are global parameters that requires a new variable, check the [example](https://github.com/Mte90/BerlinDB-Rest/blob/master/class-books-schema.php)
 * On search if it is used a column not enabled it will be removed, in case no columns is set it will use all the enabled ones
 
 ## Status
@@ -41,21 +41,17 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 * `wp-json/books/all`|GET: List endpoint with pagination and offset
 * `wp-json/books/search/?s=word&search_columns[]=<title>`: Will search inside the `title` column that has that content
 
-### Todo
-
-* Improve error messages
-  
 ## Test
 
 To view in the browser `http://domain.test/wp-json/books/1` or to search `http://domain.test/wp-json/books/?s=Moc&search_columns[]=title`.
 
 ```
 # Create
-curl -X POST -d value['isbn']=val -d value['title']=val2 -d value['author']=val2 -d value['date_created']=1657128891 -d value['date_published']=867283220 http://domain.test/wp-json/books/create
+curl -X POST -d books['isbn']=val -d books['title']=val2 -d books['author']=val2 -d books['date_created']=1657128891 -d value['date_published']=867283220 http://domain.test/wp-json/books/create
 
 # Delete
 curl -X DELETE  http://boilerplate.test/wp-json/books/1
 
 # Update
-curl -X PUT -d value['isbn']=value -d value['title']=val3  http://boilerplate.test/wp-json/books/11
+curl -X PUT -d meta['isbn']=value -d meta['title']=val3  http://boilerplate.test/wp-json/books/11
 ```

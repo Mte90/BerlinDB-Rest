@@ -147,7 +147,7 @@ class Rest extends Base {
 	 *
 	 */
 	public function initialize_global() {
-		if ( isset( $this->rest_options[ 'read_all' ] ) && $this->rest_options[ 'read_all' ] ) {
+		if ( isset( $this->rest_options[ 'create' ] ) && $this->rest_options[ 'create' ] ) {
 			\register_rest_route(
 				$this->table_name,
 				'create',
@@ -157,7 +157,7 @@ class Rest extends Base {
 					'args' => array(
 						$this->table_name => array(
 							'description' => 'Object',
-							'type' => 'array' // TODO it is a valid type?
+							'type' => 'array'
 						)
 					)
 				)
@@ -211,7 +211,7 @@ class Rest extends Base {
 					},
 					'args' => \wp_parse_args( $this->generate_rest_args(), array(
 						$column[ 'name' ] => array(
-							'type' => $column[ 'name' ] // TODO the types are the same for REST?
+							'type' => $column[ 'name' ]
 						)
 					) )
 				)
@@ -232,7 +232,7 @@ class Rest extends Base {
 					'args' => \wp_parse_args( $this->generate_rest_args(), array(
 						'meta' => array(
 							'description' => 'Object',
-							'type' => 'array' // TODO the types are the same for REST?
+							'type' => 'array'
 						)
 					) )
 				)
