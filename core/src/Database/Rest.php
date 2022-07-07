@@ -354,10 +354,8 @@ class Rest extends Base {
 	}
 
 	public function search( \WP_REST_Request $request ) {
-		// TODO support the search only for the column supported
-		$search = \apply_filters( 'berlindb_rest_' . $this->table_name . '_search', true, $request, $this );
 		$value = \apply_filters( 'berlindb_rest_' . $this->table_name . '_search_value', $request[ 's' ], $request, $this );
-		if ( $search && !empty( $value ) && !\is_wp_error( $value ) ) {
+		if ( !empty( $value ) && !\is_wp_error( $value ) ) {
 			$args = $this->parse_args( $request );
 			$query = new $this->query_class( $args );
 			if ( !empty( $query->items ) ) {
