@@ -190,14 +190,23 @@ class Rest extends Base {
 					array(
 					'methods' => \WP_REST_Server::READABLE,
 					'callback' => array( $this, 'search' ),
-					'args' => $this->generate_rest_args(),
+					'args' => \wp_parse_args( $this->generate_rest_args(), array(
+						's' => array(
+							'description' => 'Search that string in that key',
+							'type' => 'string' // TODO the types are the same for REST?
+						),
+						'columns' => array(
+							'description' => 'Search on those columns',
+							'type' => 'array' // TODO the types are the same for REST?
+						)
+					) )
 				)
 			);
 		}
 	}
 
 	public function parse_args( \WP_REST_Request $request ) {
-		$args = \wp_parse_args( $this->berlindb_default, $request );
+		$args = \wp_parse_args( $request->get_params(), $this->berlindb_default );
 
 		// Add support for defacto search WordPress parameter
 		if ( isset( $request[ 's' ] ) ) {

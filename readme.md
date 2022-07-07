@@ -24,7 +24,8 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 ## Other information
 
 * It is used the CRUD acronym to enable all the 4 kind of actions supported create/read/update/delete
-* The `search` parameter enabled in a specific column enable the searc by this value 
+* Supports all the parameters of the `Query` class
+* Include a pagination support with the `page` parameter
 * `shows_all` is a global parameter that enable a paginated list of all the items
 
 ## Status
