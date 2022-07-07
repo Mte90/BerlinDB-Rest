@@ -41,6 +41,37 @@ class Rest extends Base {
 	protected $rest_options = array();
 
 	/**
+	 * Array with default parameters for BerlinDB.
+	 *
+	 * @since 3.0.0
+	 * @var   array
+	 */
+	protected $berlindb_default = array(
+		// BerlinDB parameters
+		'fields' => '',
+		'number' => 100,
+		'offset' => 0,
+		'no_found_rows' => true,
+		'orderby' => '',
+		'order' => 'DESC',
+		'update_item_cache' => false,
+		'update_meta_cache' => false
+	);
+
+	/**
+	 * Array with default parameters for REST.
+	 *
+	 * @since 3.0.0
+	 * @var   array
+	*/
+	protected $rest_default = array(
+		'page' => array(
+			'default' => 1,
+			'type' => 'int' // TODO this type exists?
+		)
+	);
+
+	/**
 	 * Array with Column parameters.
 	 *
 	 * @since 3.0.0
@@ -114,16 +145,7 @@ class Rest extends Base {
 				array(
 					'methods' => \WP_REST_Server::READABLE,
 					'callback' => array( $this, 'read_all' ),
-					'args' => array(
-						'offset' => array(
-							'default' => 0,
-							'type' => 'int' // TODO this type exists?
-						),
-						'page' => array(
-							'default' => 1,
-							'type' => 'int' // TODO this type exists?
-						)
-					)
+					'args' => $this->generate_rest_args()
 				)
 			);
 		}
@@ -137,12 +159,11 @@ class Rest extends Base {
 				array(
 					'methods' => \WP_REST_Server::READABLE,
 					'callback' => array( $this, 'read' ),
-					'args' => array(
+					'args' => \wp_parse_args( $this->generate_rest_args(), array(
 						$this->args[ 'name' ] => array(
-							'description' => $this->args[ 'name' ] . ' key',
 							'type' => $this->args[ 'name' ] // TODO the types are the same for REST?
 						)
-					)
+					) )
 				)
 			);
 		}
@@ -153,12 +174,12 @@ class Rest extends Base {
 					array(
 					'methods' => \WP_REST_Server::EDITABLE,
 					'callback' => array( $this, 'update' ),
-					'args' => array(
+					'args' => \wp_parse_args( $this->generate_rest_args(), array(
 						'meta' => array(
 							'description' => 'Object',
 							'type' => 'array' // TODO the types are the same for REST?
 						)
-					)
+					) )
 				)
 			);
 		}
@@ -169,25 +190,41 @@ class Rest extends Base {
 					array(
 					'methods' => \WP_REST_Server::READABLE,
 					'callback' => array( $this, 'search' ),
-					'args' => array(
-						's' => array(
-							'description' => 'Search that string in that key',
-							'type' => 'string' // TODO the types are the same for REST?
-						),
-						'columns' => array(
-							'description' => 'Search on those columns',
-							'type' => 'array' // TODO the types are the same for REST?
-						)
-					)
+					'args' => $this->generate_rest_args(),
 				)
 			);
 		}
 	}
 
+	public function parse_args( \WP_REST_Request $request ) {
+		$args = \wp_parse_args( $this->berlindb_default, $request );
+
+		// Add support for defacto search WordPress parameter
+		if ( isset( $request[ 's' ] ) ) {
+			$args[ 'search' ] = $request[ 's' ];
+			unset( $args[ 's' ] );
+		}
+
+		if ( isset( $request[ 'page' ], $request[ 'offset' ] ) && $args[ 'offset' ] === 0 ) {
+			$args[ 'offset' ] = $request[ 'offset' ] * $request[ 'page' ];
+		}
+
+		return $args;
+	}
+
+	public function generate_rest_args() {
+		$args = $this->rest_default;
+		foreach( $this->berlindb_default as $key => $value ) {
+			$args[ $key ] = array(
+				'default' => $value,
+			);
+		}
+
+		return $args;
+	}
+
 	public function read( \WP_REST_Request $request ) {
-		$args = [
-			'order'   => 'asc', // TODO this should be a custom argument
-		];
+		$args = $this->parse_args( $request );
 		if ( isset( $this->args[ 'name' ] ) ) {
 			$args[ $this->args[ 'name' ] ] = $request[ $this->args[ 'name' ] ];
 		}
@@ -199,14 +236,7 @@ class Rest extends Base {
 	}
 
 	public function read_all( \WP_REST_Request $request ) {
-		if ( isset( $request['page'] ) ) {
-			$request['offset'] = $request['offset'] * $request['page'];
-		}
-
-		$args = [
-			'order'   => 'asc', // TODO this should be a custom argument
-			'offset'  => $request['offset']
-		];
+		$args = $this->parse_args( $request );
 
 		$query = new \Book_Query( $args ); // TODO auto detect the query class
 		return \rest_ensure_response( $query->items );
@@ -247,11 +277,7 @@ class Rest extends Base {
 		$search = \apply_filters( 'berlindb_rest_books_search', true, $request, $this );
 		$value = \apply_filters( 'berlindb_rest_books_search_value', $request[ 's' ], $request, $this );
 		if ( $search  && !empty( $value ) && !\is_wp_error( $value ) ) {
-			$args = [
-				'order'   => 'asc', // TODO this should be a custom argument
-				'search' => $request[ 's' ],
-				'search_columns' => $request[ 'columns' ]
-			];
+			$args = $this->parse_args( $request );
 			$query = new \Book_Query( $args ); // TODO auto detect the query class);
 			if ( !empty( $query->items ) ) {
 				return \rest_ensure_response( $query->items );
