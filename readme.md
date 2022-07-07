@@ -18,9 +18,8 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 **books** is the table name so it will be replaced.
 
 * `berlindb_rest_books_create`: executed on creation, the parameter shared is the items data in this way can be sanitized etc, if it is a WP_Error boject the creation is blocked
-* `berlindb_rest_books_delete`: return a boolean to execute the action, 2 variables shared, the whole request and the whole Rest object
-* `berlindb_rest_books_update`: like the filter above
-* `berlindb_rest_books_update_value`: executed on update, the parameter shared is the items data in this way can be sanitized etc, if it is a WP_Error object the creation is blocked
+* `berlindb_rest_books_delete/search/update`: return a boolean to execute the action, 2 variables shared, the whole request and the whole Rest object
+* `berlindb_rest_books_update/search_value`: executed on update, the parameter shared is the items data in this way can be sanitized etc, if it is a WP_Error object the creation is blocked
 
 ## Other information
 
@@ -41,9 +40,9 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 
 ### Todo
 
-**Specific changes are comment with TODO to discuss later**
+**Specific changes are commented with TODO to discuss later**
 
-* Search support for multiple column
+* Search support for multiple columns
 * How to get the table name? (to remove the hardcoded stuff)
 * Merge `read`, `read_all`, `search` in a unique method
   
