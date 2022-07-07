@@ -46,7 +46,6 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 
 * How to get the table name? (to remove the hardcoded stuff)
 * Improve error messages
-* Instead of a single class to initialize for everything is better to split that on methods for global and for columns so the instance is just one
   
 ## Test
 

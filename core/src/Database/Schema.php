@@ -43,10 +43,10 @@ class Schema extends Base {
 	/**
 	 * Array of database column objects as array.
 	 *
-	 * @since 1.0.0
+	 * @since 3.0.0
 	 * @var   array
 	 */
-	protected $columns_rest = array();
+	protected $columns_array = array();
 	// EDIT New lines
 
 	/**
@@ -80,24 +80,26 @@ class Schema extends Base {
 				$this->columns[] = $column;
 			}
 			// EDIT New lines
-			new Rest( $column );
-			$this->columns_rest[] = $column;
+			$this->columns_array[] = $column;
 			// EDIT New lines
 		}
 
 		// EDIT New lines
+		$global_rest_methods = array();
 		// TODO improve those lines...
 		if ( isset( $this->rest[ 'create' ] ) ) {
-			new Rest( array(), 'create' );
+			$global_rest_methods[ 'create' ] = true;
 		}
 
 		if ( isset( $this->rest[ 'shows_all' ] ) ) {
-			new Rest( array(), 'shows_all' );
+			$global_rest_methods[ 'shows_all' ] = true;
 		}
 
 		if ( isset( $this->rest[ 'enable_search' ] ) ) {
-			new Rest( array(), 'enable_search', $this->columns_rest );
+			$global_rest_methods[ 'enable_search' ] = true;
 		}
+
+		new Rest( $this->columns_array, $global_rest_methods );
 		// EDIT New lines
 	}
 
