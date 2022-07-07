@@ -13,10 +13,10 @@ class Books_Schema extends \BerlinDB\Database\Schema {
 		'shows_all' => true,
 		'enable_search' => true
 	);
-	// EDIT New lines
 
 	public $table_name = 'books';
 	public $query_class = '\Book_Query';
+	// EDIT New lines
 
 	public $columns = [
 

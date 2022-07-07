@@ -180,6 +180,9 @@ class Rest extends Base {
 				'/search/',
 					array(
 					'methods' => \WP_REST_Server::READABLE,
+					'permission_callback' => function () {
+						return \apply_filters( 'berlindb_rest_' . $this->table_name . '_search', true, $this );
+					},
 					'callback' => array( $this, 'search' ),
 					'args' => \wp_parse_args( $this->generate_rest_args(), array(
 						's' => array(
@@ -220,6 +223,9 @@ class Rest extends Base {
 				'/(?P<' . $column[ 'name' ] .'>\d+)',
 					array(
 					'methods' => \WP_REST_Server::EDITABLE,
+					'permission_callback' => function () use ( $column ) {
+						return \apply_filters( 'berlindb_rest_' . $this->table_name . '_update', true, $column, $this );
+					},
 					'callback' => function( \WP_REST_Request $request ) use ( $column ) {
 						$this->update( $request, $column );
 					},
@@ -238,6 +244,9 @@ class Rest extends Base {
 				'/(?P<' . $column[ 'name' ] .'>\d+)',
 					array(
 					'methods' => 'DELETE',
+					'permission_callback' => function () use ( $column ) {
+						return \apply_filters( 'berlindb_rest_' . $this->table_name . '_delete', true, $column, $this );
+					},
 					'callback' => function( \WP_REST_Request $request ) use ( $column ) {
 						$this->delete( $request, $column );
 					},
@@ -329,19 +338,14 @@ class Rest extends Base {
 	}
 
 	public function delete( \WP_REST_Request $request, $column ) {
-		$delete = \apply_filters( 'berlindb_rest_' . $this->table_name . '_delete', true, $request, $this );
-		if ( $delete ) {
-			$query = new $this->query_class();
-			$query->delete_item( $request[ $column[ 'name' ] ] );
-			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
-		}
-		return \rest_ensure_response( array( 'fail' => true ) ); // TODO We want strings or a custom text?
+		$query = new $this->query_class();
+		$query->delete_item( $request[ $column[ 'name' ] ] );
+		return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
 	}
 
 	public function update( \WP_REST_Request $request, $column ) {
-		$update = \apply_filters( 'berlindb_rest_' . $this->table_name . '_update', true, $request, $this );
 		$item_meta = \apply_filters( 'berlindb_rest_' . $this->table_name . '_update_value', $request[ 'value' ], $request, $this );
-		if ( $update  && !\is_wp_error( $item_meta ) ) {
+		if ( !\is_wp_error( $item_meta ) ) {
 			$query = new $this->query_class();
 			$query->update_item( $request[ $column[ 'name' ] ], $item_meta );
 			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?

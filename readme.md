@@ -44,7 +44,6 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 
 **Specific changes are commented with TODO to discuss later**
 
-* Move the filters to validate the request to `permission_callback` parameter in REST
 * Improve error messages
   
 ## Test
