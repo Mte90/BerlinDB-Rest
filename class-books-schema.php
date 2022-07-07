@@ -9,7 +9,7 @@ class Books_Schema extends \BerlinDB\Database\Schema {
 
 	// EDIT New lines
 	public $rest = array(
-		'crud' => true, // TODO right now is just Create
+		'read_all' => true,
 		'shows_all' => true,
 		'enable_search' => true
 	);

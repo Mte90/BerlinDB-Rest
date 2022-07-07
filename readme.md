@@ -10,8 +10,9 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 
 ## Changes
 
-* Added a new array variable `rest` in [`Schema`](https://github.com/Mte90/BerlinDB-Rest/blob/master/core/src/Database/Schema.php) class to set the global proprierty for the table, it is used to create a new item
+* Added a new array variable `rest/table_name/query_class` in [`Schema`](https://github.com/Mte90/BerlinDB-Rest/blob/master/core/src/Database/Schema.php) class to set the global proprierty for the table, it is used to create a new item
 * A new class [`Rest`](https://github.com/Mte90/BerlinDB-Rest/blob/master/core/src/Database/Rest.php)that is executed once for the table and for every column, it will check if rest is enabled and will enable the various endpoints (check that file for all the features)
+* Some changes to [`Schema`](https://github.com/Mte90/BerlinDB-Rest/blob/master/core/src/Database/Schema.php) to execute the new class and share those new variables
 
 ### New filters
 
@@ -26,7 +27,7 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 * It is used the CRUD acronym to enable all the 4 kind of actions supported create/read/update/delete
 * Supports all the parameters of the `Query` class
 * Include a pagination support with the `page` parameter
-* `shows_all` is a global parameter that enable a paginated list of all the items
+* `shows_all/read_all_enable_search` are global parameters that requires a new variable, check the [example](https://github.com/Mte90/BerlinDB-Rest/blob/master/class-books-schema.php)
 * On search if it is used a column not enabled it will be removed, in case no columns is set it will use all the enabled ones
 
 ## Status
@@ -41,8 +42,6 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 * `wp-json/books/search/?s=word&search_columns[]=<title>`: Will search inside the `title` column that has that content
 
 ### Todo
-
-**Specific changes are commented with TODO to discuss later**
 
 * Improve error messages
   

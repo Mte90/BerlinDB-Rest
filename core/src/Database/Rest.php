@@ -67,7 +67,7 @@ class Rest extends Base {
 	protected $rest_default = array(
 		'page' => array(
 			'default' => 1,
-			'type' => 'int' // TODO this type exists?
+			'type' => 'int'
 		)
 	);
 
@@ -147,7 +147,7 @@ class Rest extends Base {
 	 *
 	 */
 	public function initialize_global() {
-		if ( isset( $this->rest_options[ 'create' ] ) && $this->rest_options[ 'create' ] ) {
+		if ( isset( $this->rest_options[ 'read_all' ] ) && $this->rest_options[ 'read_all' ] ) {
 			\register_rest_route(
 				$this->table_name,
 				'create',
@@ -329,28 +329,47 @@ class Rest extends Base {
 
 	public function create( \WP_REST_Request $request ) {
 		$value = \apply_filters( 'berlindb_rest_' . $this->table_name . '_create', $request[ 'value' ] );
+		$response = \rest_ensure_response();
 		if ( isset( $request[ 'value' ] ) && !\is_wp_error( $value ) ) {
 			$query = new $this->query_class();
-			$query->add_item( apply_filters( 'berlindb_rest_' . $this->table_name . '_create', $value ) );
-			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
+			$result = $query->add_item( apply_filters( 'berlindb_rest_' . $this->table_name . '_create', $value ) );
+			if ( $result ) {
+				return $response;
+			}
 		}
-		return \rest_ensure_response( array( 'fail' => true ) ); // TODO We want strings or a custom text?
+
+		$response->set_status( 500 );
+
+		return $response;
 	}
 
 	public function delete( \WP_REST_Request $request, $column ) {
 		$query = new $this->query_class();
-		$query->delete_item( $request[ $column[ 'name' ] ] );
-		return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
+		$response = \rest_ensure_response();
+		$result = $query->delete_item( $request[ $column[ 'name' ] ] );
+		if ( $result ) {
+			return $response;
+		}
+
+		$response->set_status( 500 );
+
+		return $response;
 	}
 
 	public function update( \WP_REST_Request $request, $column ) {
 		$item_meta = \apply_filters( 'berlindb_rest_' . $this->table_name . '_update_value', $request[ 'value' ], $request, $this );
+		$response = \rest_ensure_response();
 		if ( !\is_wp_error( $item_meta ) ) {
 			$query = new $this->query_class();
 			$query->update_item( $request[ $column[ 'name' ] ], $item_meta );
-			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
+			if ( $result ) {
+				return $response;
+			}
 		}
-		return \rest_ensure_response( array( 'fail' => true ) ); // TODO We want strings or a custom text?
+
+		$response->set_status( 500 );
+
+		return $response;
 	}
 
 	public function search( \WP_REST_Request $request ) {
@@ -362,7 +381,11 @@ class Rest extends Base {
 				return \rest_ensure_response( $query->items );
 			}
 		}
-		return \rest_ensure_response( array( 'fail' => true ) ); // TODO We want strings or a custom text?
+
+		$response = \rest_ensure_response();
+		$response->set_status( 500 );
+
+		return $response;
 	}
 
 }
