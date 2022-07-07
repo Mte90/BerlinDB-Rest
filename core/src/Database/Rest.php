@@ -96,7 +96,7 @@ class Rest extends Base {
 				'books', // TODO change with the table name
 				'create',
 				array(
-					'methods' => 'POST',
+					'methods' => \WP_REST_Server::CREATABLE,
 					'callback' => array( $this, 'create' ),
 					'args' => array(
 						'books' => array( // TODO change with the table name
@@ -112,7 +112,7 @@ class Rest extends Base {
 				'books', // TODO change with the table name
 				'all',
 				array(
-					'methods' => 'GET',
+					'methods' => \WP_REST_Server::READABLE,
 					'callback' => array( $this, 'read_all' ),
 					'args' => array(
 						'offset' => array(
@@ -162,17 +162,17 @@ class Rest extends Base {
 				)
 			);
 		}
-		if ( isset( $this->rest_options[ 'delete' ] ) && $this->rest_options[ 'delete' ] ) {
+		if ( isset( $this->rest_options[ 'search' ] ) && $this->rest_options[ 'search' ] ) {
 			\register_rest_route(
 				'books', // TODO change with the table name
-				'/(?P<' . $this->args[ 'name' ] .'>\d+)',
+				'/search/(?P<' . $this->args[ 'name' ] .'>\w+)',
 					array(
-					'methods' => \WP_REST_Server::DELETABLE,
-					'callback' => array( $this, 'delete' ),
+					'methods' => \WP_REST_Server::READABLE,
+					'callback' => array( $this, 'search' ),
 					'args' => array(
 						$this->args[ 'name' ] => array(
-							'description' => $this->args[ 'name' ] . ' key',
-							'type' => $this->args[ 'name' ] // TODO the types are the same for REST?
+							'description' => 'Search that string in that key',
+							'type' => 'string' // TODO the types are the same for REST?
 						)
 					)
 				)
@@ -231,9 +231,21 @@ class Rest extends Base {
 	public function update( \WP_REST_Request $request ) {
 		$update = \apply_filters( 'berlindb_rest_books_update', true, $request, $this );
 		$item_meta = \apply_filters( 'berlindb_rest_books_update_value', $request[ 'value' ], $request, $this );
-		if ( $update  && !\is_wp_error( $value )) {
+		if ( $update  && !\is_wp_error( $item_meta ) ) {
 			$query = new \Book_Query(); // TODO auto detect the query class
 			$query->update_item( $request[ $this->args[ 'name' ] ], $item_meta );
+			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
+		}
+		return \rest_ensure_response( array( 'fail' => true ) ); // TODO We want strings or a custom text?
+	}
+
+	public function search( \WP_REST_Request $request ) {
+		$search = \apply_filters( 'berlindb_rest_books_search', true, $request, $this );
+		$value = \apply_filters( 'berlindb_rest_books_search_value', $request[ $this->args[ 'name' ] ], $request, $this );
+		if ( $search  && !\is_wp_error( $value ) ) {
+			// TODO BerlinDB doesn't have a search way
+// 			$query = new \Book_Query(); // TODO auto detect the query class
+// 			$query->update_item( $request[ $this->args[ 'name' ] ], $item_meta );
 			return \rest_ensure_response( array( 'success' => true ) ); // TODO We want strings or a custom text?
 		}
 		return \rest_ensure_response( array( 'fail' => true ) ); // TODO We want strings or a custom text?

@@ -10,8 +10,8 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 
 ## Changes
 
-* Added a new array variable `rest` in `Schema` class to set the global proprierty for the table, it is used to create a new item
-* A new class `Rest` that is executed once for the table and for every column, it will check if rest is enabled and will enable the various endpoints (check that file for all the features)
+* Added a new array variable `rest` in [`Schema`](https://github.com/Mte90/BerlinDB-Rest/blob/master/core/src/Database/Schema.php) class to set the global proprierty for the table, it is used to create a new item
+* A new class [`Rest`](https://github.com/Mte90/BerlinDB-Rest/blob/master/core/src/Database/Rest.php)that is executed once for the table and for every column, it will check if rest is enabled and will enable the various endpoints (check that file for all the features)
 
 ### New filters
 
@@ -37,12 +37,13 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 * `wp-json/books/<id>`|PUT: Update item by column/key name
 * `wp-json/books/create`|POST: Create endpoint
 * `wp-json/books/all`|GET: List endpoint with pagination and offset
+* `wp-json/books/search/<title>`: Will search inside the `title` that has that content
 
 ### Todo
 
 **Specific changes are comment with TODO to discuss later**
 
-* Search endpoint
+* Search endpoint is implemented but there isn't a method to search by a column and a value
 * How to get the table name? (to remove the hardcoded stuff)
 * Merge `read` and `read_all` in a unique method
   
