@@ -39,6 +39,16 @@ class Schema extends Base {
 	 */
 	protected $columns = array();
 
+	// EDIT New lines
+	/**
+	 * Array of database column objects as array.
+	 *
+	 * @since 1.0.0
+	 * @var   array
+	 */
+	protected $columns_rest = array();
+	// EDIT New lines
+
 	/**
 	 * Invoke new column objects based on array of column data.
 	 *
@@ -62,6 +72,21 @@ class Schema extends Base {
 			$this->rest[ 'delete' ] = true;
 		}
 
+		// Loop through columns and create objects from them
+		foreach ( $columns as $column ) {
+			if ( is_array( $column ) ) {
+				$this->columns[] = new Column( $column );
+			} elseif ( $column instanceof Column ) {
+				$this->columns[] = $column;
+			}
+			// EDIT New lines
+			new Rest( $column );
+			$this->columns_rest[] = $column;
+			// EDIT New lines
+		}
+
+		// EDIT New lines
+		// TODO improve those lines...
 		if ( isset( $this->rest[ 'create' ] ) ) {
 			new Rest( array(), 'create' );
 		}
@@ -70,17 +95,10 @@ class Schema extends Base {
 			new Rest( array(), 'shows_all' );
 		}
 
-		// Loop through columns and create objects from them
-		foreach ( $columns as $column ) {
-			if ( is_array( $column ) ) {
-				$this->columns[] = new Column( $column );
-				// EDIT New lines
-				new Rest( $column );
-				// EDIT New lines
-			} elseif ( $column instanceof Column ) {
-				$this->columns[] = $column;
-			}
+		if ( isset( $this->rest[ 'enable_search' ] ) ) {
+			new Rest( array(), 'enable_search', $this->columns_rest );
 		}
+		// EDIT New lines
 	}
 
 	/**

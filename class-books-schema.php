@@ -10,7 +10,8 @@ class Books_Schema extends \BerlinDB\Database\Schema {
 	// EDIT New lines
 	public $rest = array(
 		'crud' => true, // TODO right now is just Create
-		'shows_all' => true
+		'shows_all' => true,
+		'enable_search' => true
 	);
 	// EDIT New lines
 
@@ -64,6 +65,11 @@ class Books_Schema extends \BerlinDB\Database\Schema {
 			'unsigned'   => true,
 			'searchable' => true,
 			'sortable'   => true,
+			// EDIT New lines
+			'rest' => array(
+				'search' => true,
+			)
+			// EDIT New lines
 		],
 
 		//date_created

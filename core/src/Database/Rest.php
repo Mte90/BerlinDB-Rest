@@ -80,12 +80,24 @@ class Rest extends Base {
 	protected $args = '';
 
 	/**
+	 * Array with all the columns (used by some specific feature).
+	 *
+	 * @since 3.0.0
+	 * @var   array
+	 */
+	protected $all_columns = array();
+
+	/**
 	 * Initiliaze a new REST endpoint if the column is enabled.
 	 *
 	 * @since 3.0.0
 	 */
-	public function __construct( $args = array(), $global_action = '' ) {
+	public function __construct( $args = array(), $global_action = '', $all_columns = array() ) {
 		$this->args = $args;
+		if ( !empty( $all_columns ) ) {
+			$this->all_columns = $all_columns;
+		}
+
 		if ( empty( $this->args ) ) {
 			if ( $global_action === 'create' ) {
 				$this->rest_options[ 'create' ] = true;
@@ -93,6 +105,10 @@ class Rest extends Base {
 
 			if ( $global_action === 'shows_all' ) {
 				$this->rest_options[ 'shows_all' ] = true;
+			}
+
+			if ( $global_action === 'enable_search' ) {
+				$this->rest_options[ 'enable_search' ] = true;
 			}
 
 			\add_action( 'rest_api_init', array( $this, 'initialize_global' ) );
@@ -149,6 +165,27 @@ class Rest extends Base {
 				)
 			);
 		}
+		if ( isset( $this->rest_options[ 'enable_search' ] ) && $this->rest_options[ 'enable_search' ] ) {
+			// TODO don't add if already exists for this endpoint
+			\register_rest_route(
+				'books', // TODO change with the table name
+				'/search/',
+					array(
+					'methods' => \WP_REST_Server::READABLE,
+					'callback' => array( $this, 'search' ),
+					'args' => \wp_parse_args( $this->generate_rest_args(), array(
+						's' => array(
+							'description' => 'Search that string in that key',
+							'type' => 'string' // TODO the types are the same for REST?
+						),
+						'columns' => array(
+							'description' => 'Search on those columns',
+							'type' => 'array' // TODO the types are the same for REST?
+						)
+					) )
+				)
+			);
+		}
 	}
 
 	public function initialize_column_value() {
@@ -183,23 +220,19 @@ class Rest extends Base {
 				)
 			);
 		}
-		if ( isset( $this->rest_options[ 'search' ] ) && $this->rest_options[ 'search' ] ) {
+		if ( isset( $this->rest_options[ 'delete' ] ) && $this->rest_options[ 'delete' ] ) {
 			\register_rest_route(
 				'books', // TODO change with the table name
-				'/search/',
+				'/(?P<' . $this->args[ 'name' ] .'>\d+)',
 					array(
-					'methods' => \WP_REST_Server::READABLE,
-					'callback' => array( $this, 'search' ),
-					'args' => \wp_parse_args( $this->generate_rest_args(), array(
-						's' => array(
-							'description' => 'Search that string in that key',
-							'type' => 'string' // TODO the types are the same for REST?
-						),
-						'columns' => array(
-							'description' => 'Search on those columns',
-							'type' => 'array' // TODO the types are the same for REST?
+					'methods' => 'DELETE',
+					'callback' => array( $this, 'delete' ),
+					'args' => array(
+						$this->args[ 'name' ] => array(
+							'description' => $this->args[ 'name' ] . ' key',
+							'type' => $this->args[ 'name' ] // TODO the types are the same for REST?
 						)
-					) )
+					)
 				)
 			);
 		}
@@ -212,6 +245,23 @@ class Rest extends Base {
 		if ( isset( $request[ 's' ] ) ) {
 			$args[ 'search' ] = $request[ 's' ];
 			unset( $args[ 's' ] );
+		}
+
+		$args[ 'search_columns' ] = $request[ 'search_columns' ];
+		foreach ( $args[ 'search_columns' ] as $key => $name ) {
+			if ( !in_array( $name, $this->all_columns ) ) {
+				unset( $args[ 'search_columns' ][ $key ] );
+			}
+		}
+
+		if ( empty( $args[ 'search_columns' ] ) ) {
+			$columns_supported = array();
+			foreach ( $this->all_columns as $name => $column ) {
+				if ( isset( $column[ 'rest' ][ 'search' ] ) && $column[ 'rest' ][ 'search' ] ) {
+					$columns_supported[ $column[ 'name' ] ] = true;
+				}
+			}
+			$args[ 'search_columns' ] = $columns_supported;
 		}
 
 		if ( isset( $request[ 'page' ], $request[ 'offset' ] ) && $args[ 'offset' ] === 0 ) {
@@ -283,9 +333,10 @@ class Rest extends Base {
 	}
 
 	public function search( \WP_REST_Request $request ) {
+		// TODO support the search only for the column supported
 		$search = \apply_filters( 'berlindb_rest_books_search', true, $request, $this );
 		$value = \apply_filters( 'berlindb_rest_books_search_value', $request[ 's' ], $request, $this );
-		if ( $search  && !empty( $value ) && !\is_wp_error( $value ) ) {
+		if ( $search && !empty( $value ) && !\is_wp_error( $value ) ) {
 			$args = $this->parse_args( $request );
 			$query = new \Book_Query( $args ); // TODO auto detect the query class);
 			if ( !empty( $query->items ) ) {
