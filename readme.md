@@ -18,6 +18,7 @@ Changes are wrapped on `// EDIT New lines` and the Rest.php file is the integrat
 
 **books** is the table name so it will be replaced.
 
+* `berlindb_rest_books_create/delete/update/all/search_permission`: filter to use that request
 * `berlindb_rest_books_create`: executed on creation, the parameter shared is the items data in this way can be sanitized etc, if it is a WP_Error boject the creation is blocked
 * `berlindb_rest_books_delete/search/update`: return a boolean to execute the action, 2 variables shared, the whole request and the whole Rest object
 * `berlindb_rest_books_update/search_value`: executed on update, the parameter shared is the items data in this way can be sanitized etc, if it is a WP_Error object the creation is blocked
